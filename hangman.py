@@ -3,7 +3,8 @@ import random
 
 
 
-def hangman_pic(lives_left):
+def hangman_pic(tries_left):
+# fix order
     hangman = ['''
       +---+
       |   |
@@ -55,20 +56,7 @@ def hangman_pic(lives_left):
           |
     =========''']
     hangman.reverse()
-    if lives_left == 0:
-        print(hangman[1])
-    elif lives_left == 1:
-        print(hangman[2])
-    elif lives_left == 2:
-        print(hangman[3])
-    elif lives_left == 3:
-        print(hangman[4])
-    elif lives_left == 4:
-        print(hangman[5])
-    elif lives_left == 5:
-        print(hangman[6])
-    elif lives_left == 6:
-        print(hangman[7])
+    print(hangman[tries_left])
 
 
 def main():
@@ -80,66 +68,89 @@ def main():
         stripped_lines = line.strip()
         list_of_words.append(stripped_lines)
 
-    guessed_words = []
-    guessed_letters = []
+    wrong_guessed_letters = []
+    right_guessed_letters = []
     tries = 6
     score = 0
-    total_lives = 0
-    user_yes = True
+    total_lives = get_total_lives_from_user()
 
-    bad_input = True
-
-
-    while bad_input:
-        user_difficulty = input("Enter a difficulty easy, medium, or hard: ")
-        if user_difficulty == "easy":
-            total_lives += 8
-            bad_input = False
-        elif user_difficulty == "medium":
-            total_lives += 4
-            bad_input = False
-        elif user_difficulty == "hard":
-            total_lives += 2
-            bad_input = False
-        else:
-            print("Enter easy, medium, or hard")
-            continue
 
     while total_lives >= 0:
-        word_num = random.randint(0, len(list_of_words))
-        word = list_of_words[word_num]
-        word_char_list = list(word)
-        blank_spaces = []
-        for i in range(len(word)):
-            blank_spaces.append("_")
-        print("Score:", score)
-        print("Total lives:", total_lives)
-        print("Tries:", tries)
-        hangman_pic(total_lives)
+        word = random_word_from_list(list_of_words)
+        user_word_progress = initialize_word_progress(word)
 
+        while tries > 0:
+            print("Score:", score)
+            print("Total lives:", total_lives)
+            print("Tries:", tries)
+            hangman_pic(tries)
+            print_word_progress(user_word_progress)
 
-        while tries >= -1:
-            user_guess = input("Enter a letter or type the word to solve: ")
-            if not user_guess.isalpha:
-                print("It has to be a lower case letter")
-                continue
-            elif 1 < len(user_guess) < len(word_char_list):
-                print("That's incorrect")
+            user_guess = input("Enter a letter : ").lower()
+            user_guess_positions = find_positions_in_word(user_guess, word)
+            if not user_guess_positions:
                 tries -= 1
-                continue
+                print("incorrect")
+
+            else:
+                update_word_progress(user_guess, user_guess_positions, user_word_progress)
+
+def update_word_progress(user_input, positions, progress_list):
+    for position in positions:
+        progress_list[position] = user_input
+
+
+
+def print_word_progress(user_word_progress):
+    print(''.join(user_word_progress))
+
+
+def find_positions_in_word(user_guess, word):
+    user_guess_positions = []
+    for pos, char in enumerate(word):
+        if char == user_guess:
+            user_guess_positions.append(pos)
+    return user_guess_positions
+
+
+
+def initialize_word_progress(word):
+    return list("_" * len(word))
+
+
+#def replace_blanks(user_input):
+
+
+
+def random_word_from_list(list_of_words):
+    word_num = random.randint(0, len(list_of_words)-1)
+    word = list_of_words[word_num]
+    return word
+
+
+def get_total_lives_from_user():
+    total_lives = 0
+    while total_lives <= 0:
+        user_difficulty = input("Enter a difficulty easy, medium, or hard: ")
+        total_lives = get_total_lives(user_difficulty)
+    return total_lives
+
+def get_total_lives(user_difficulty):
+    if user_difficulty == "easy":
+        return 8
+    elif user_difficulty == "medium":
+        return 4
+    elif user_difficulty == "hard":
+        return 2
+    else:
+        return -1
 
 
 
 
+if __name__ == '__main__':
+    main()
 
-
-
-
-
-
-
-
-main()
 
 
 
